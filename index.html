@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>名偵探柯南 TCG 卡牌資料庫</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        :root {
+            --color-green: #2e7d32;
+            --color-blue: #1565c0;
+            --color-red: #c62828;
+            --color-white: #ffffff;
+            --bg-body: #f4f6f9;
+            --text-main: #2c3e50;
+        }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #1a252f;
+            margin-bottom: 5px;
+        }
+
+        /* 搜尋與篩選控制區 */
+        .filter-container {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            flex: 1;
+            min-width: 200px;
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* 卡牌網格排版（自動適應螢幕大小） */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 單張卡牌外框 */
+        .card-item {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #eef2f5;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* 圖片區 */
+        .card-img-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #eceff1;
+        }
+
+        .card-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 費用標籤 */
+        .cost-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 顏色樣式 */
+        .bg-green { background-color: var(--color-green); }
+        .bg-blue { background-color: var(--color-blue); }
+        .bg-red { background-color: var(--color-red); }
+        .bg-white { background-color: #78909c; }
+
+        /* 卡牌文字內容 */
+        .card-info {
+            padding: 16px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-bottom: 6px;
+        }
+
+        .type-badge {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .card-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .trait-badge {
+            background: #e0e0e0;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: #424242;
+        }
+
+        /* 戰鬥力 */
+        .card-power-row {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #f1f3f5;
+        }
+
+        .power-col {
+            flex: 1;
+            text-align: center;
+        }
+
+        .power-label {
+            font-size: 0.7rem;
+            color: #95a5a6;
+            display: block;
+        }
+
+        .power-num {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* 效果說明 */
+        .card-effect-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #34495e;
+            border-top: 1px dashed #edf2f7;
+            padding-top: 10px;
+        }
+
+        .effect-tag {
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 4px;
+            display: inline-block;
+        }
+        .tag-cutin { background-color: #ff9800; }
+        .tag-turn { background-color: #e91e63; }
+
+        /* 查無資料提示 */
+        .no-data {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <header>
+        <h1>名偵探柯南 TCG 卡牌資料庫</h1>
+        <p>最新卡牌資訊與即時效果查詢</p>
+    </header>
+
+    <div class="filter-container">
+        <input type="text" class="search-input" v-model="searchQuery" placeholder="搜尋卡名、特徵或效果關鍵字...">
+        
+        <select class="filter-select" v-model="selectedColor">
+            <option value="">所有顏色</option>
+            <option value="green">🟢 綠色</option>
+            <option value="blue">🔵 藍色</option>
+            <option value="red">🔴 紅色</option>
+            <option value="white">⚪ 白色</option>
+        </select>
+
+        <select class="filter-select" v-model="selectedType">
+            <option value="">所有種類</option>
+            <option value="角色卡">角色卡</option>
+            <option value="事件卡">事件卡</option>
+            <option value="現場卡">現場卡</option>
+        </select>
+    </div>
+
+    <div class="card-grid">
+        <div class="card-item" v-for="card in filteredCards" :key="card.id">
+            <div class="card-img-wrap">
+                <img :src="card.image" :alt="card.name">
+                <div class="cost-tag" :class="'bg-' + card.color">{{ card.cost }}</div>
+            </div>
+
+            <div class="card-info">
+                <div class="card-header">
+                    <span>{{ card.id }} ({{ card.rarity }})</span>
+                    <span class="type-badge" :class="'bg-' + card.color">{{ card.type }}</span>
+                </div>
+
+                <div class="card-title-row">
+                    <h3 class="card-name">{{ card.name }}</h3>
+                    <span class="trait-badge" v-if="card.trait">{{ card.trait }}</span>
+                </div>
+
+                <div class="card-power-row" v-if="card.type === '角色卡'">
+                    <div class="power-col">
+                        <span class="power-label">AP</span>
+                        <span class="power-num" style="color: #c62828;">{{ card.ap }}</span>
+                    </div>
+                    <div class="power-col">
+                        <span class="power-label">LP</span>
+                        <span class="power-num" style="color: #0277bd;">{{ card.lp }}</span>
+                    </div>
+                </div>
+
+                <div class="card-effect-text">
+                    <span class="effect-tag tag-cutin" v-if="card.hasCutIn">⚡️介入</span>
+                    <span class="effect-tag tag-turn" v-if="card.hasTurnLimit">{{ card.turnLimitText }}</span>
+                    {{ card.effect }}
+                </div>
+            </div>
+        </div>
+
+        <div class="no-data" v-if="filteredCards.length === 0">
+            找不到符合條件的卡牌 🔍
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+        setup() {
+            // 搜尋與篩選的雙向綁定變數
+            const searchQuery = ref('');
+            const selectedColor = ref('');
+            const selectedType = ref('');
+
+            // ==========================================
+            // 📝 未來你只需要在這裡「增加」或「修改」卡牌資料
+            // ==========================================
+            const cards = ref([
+                {
+                    id: "B10028 / 1089",
+                    rarity: "C",
+                    color: "green", // 可選: green, blue, red, white
+                    type: "角色卡",  // 可選: 角色卡, 事件卡, 現場卡
+                    cost: 2,
+                    name: "沖田總司",
+                    trait: "高校生",
+                    ap: 1000,
+                    lp: 1,
+                    hasCutIn: true,
+                    hasTurnLimit: true,
+                    turnLimitText: "自己回合中",
+                    effect: "自己現場每有１張特徵［高校生］的角色，AP+1000（在自己回合接觸期間，從手牌棄置來使用）",
+                    image: "75084666-5826-4944-b8ed-609ed3f7ef09.jpeg" // 確保圖片跟此html檔放在同個資料夾
+                }
+                // 💡 以後要加第二張卡，直接在下面貼上格式即可：
+                // ,{ id: "B10029", rarity: "R", color: "blue", type: "角色卡", ... }
+            ]);
+
+            // 核心邏輯：自動計算篩選後的卡牌清單
+            const filteredCards = computed(() => {
+                return cards.value.filter(card => {
+                    const matchesSearch = card.name.includes(searchQuery.value) || 
+                                          (card.trait && card.trait.includes(searchQuery.value)) || 
+                                          card.effect.includes(searchQuery.value);
+                    const matchesColor = selectedColor.value === '' || card.color === selectedColor.value;
+                    const matchesType = selectedType.value === '' || card.type === selectedType.value;
+                    
+                    return matchesSearch && matchesColor && matchesType;
+                });
+            });
+
+            return {
+                searchQuery,
+                selectedColor,
+                selectedType,
+                filteredCards
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
+

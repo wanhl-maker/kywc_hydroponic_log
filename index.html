@@ -3,354 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名偵探柯南 TCG 卡牌資料庫</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>🌱 水耕種植工作紀錄系統</title>
+    <!-- 引入 Tailwind CSS 讓介面更美觀生動 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- 引入 Font Awesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --color-green: #2e7d32;
-            --color-blue: #1565c0;
-            --color-red: #c62828;
-            --color-white: #ffffff;
-            --bg-body: #f4f6f9;
-            --text-main: #2c3e50;
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
-
-        body {
-            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: #1a252f;
-            margin-bottom: 5px;
-        }
-
-        /* 搜尋與篩選控制區 */
-        .filter-container {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-            max-width: 1200px;
-            margin: 0 auto 30px auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .search-input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 200px;
-            font-size: 1rem;
-        }
-
-        .filter-select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: white;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        /* 卡牌網格排版（自動適應螢幕大小） */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* 單張卡牌外框 */
-        .card-item {
-            background: white;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            border: 1px solid #eef2f5;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        /* 圖片區 */
-        .card-img-wrap {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: #eceff1;
-        }
-
-        .card-img-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* 費用標籤 */
-        .cost-tag {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-
-        /* 顏色樣式 */
-        .bg-green { background-color: var(--color-green); }
-        .bg-blue { background-color: var(--color-blue); }
-        .bg-red { background-color: var(--color-red); }
-        .bg-white { background-color: #78909c; }
-
-        /* 卡牌文字內容 */
-        .card-info {
-            padding: 16px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: #7f8c8d;
-            margin-bottom: 6px;
-        }
-
-        .type-badge {
-            padding: 1px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .card-title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .card-name {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .trait-badge {
-            background: #e0e0e0;
-            font-size: 0.8rem;
-            padding: 3px 8px;
-            border-radius: 12px;
-            color: #424242;
-        }
-
-        /* 戰鬥力 */
-        .card-power-row {
-            display: flex;
-            background: #f8f9fa;
-            border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 12px;
-            border: 1px solid #f1f3f5;
-        }
-
-        .power-col {
-            flex: 1;
-            text-align: center;
-        }
-
-        .power-label {
-            font-size: 0.7rem;
-            color: #95a5a6;
-            display: block;
-        }
-
-        .power-num {
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        /* 效果說明 */
-        .card-effect-text {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            color: #34495e;
-            border-top: 1px dashed #edf2f7;
-            padding-top: 10px;
-        }
-
-        .effect-tag {
-            color: white;
-            font-size: 0.75rem;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-right: 4px;
-            display: inline-block;
-        }
-        .tag-cutin { background-color: #ff9800; }
-        .tag-turn { background-color: #e91e63; }
-
-        /* 查無資料提示 */
-        .no-data {
-            text-align: center;
-            grid-column: 1 / -1;
-            padding: 40px;
-            color: #7f8c8d;
-            font-size: 1.1rem;
-        }
+        .float-animation { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen flex items-center justify-center p-4 font-sans">
 
-<div id="app">
-    <header>
-        <h1>名偵探柯南 TCG 卡牌資料庫</h1>
-        <p>最新卡牌資訊與即時效果查詢</p>
-    </header>
-
-    <div class="filter-container">
-        <input type="text" class="search-input" v-model="searchQuery" placeholder="搜尋卡名、特徵或效果關鍵字...">
+    <div class="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl w-full max-w-md border border-green-100 transition-all hover:shadow-green-900/10">
         
-        <select class="filter-select" v-model="selectedColor">
-            <option value="">所有顏色</option>
-            <option value="green">🟢 綠色</option>
-            <option value="blue">🔵 藍色</option>
-            <option value="red">🔴 紅色</option>
-            <option value="white">⚪ 白色</option>
-        </select>
-
-        <select class="filter-select" v-model="selectedType">
-            <option value="">所有種類</option>
-            <option value="角色卡">角色卡</option>
-            <option value="事件卡">事件卡</option>
-            <option value="現場卡">現場卡</option>
-        </select>
-    </div>
-
-    <div class="card-grid">
-        <div class="card-item" v-for="card in filteredCards" :key="card.id">
-            <div class="card-img-wrap">
-                <img :src="card.image" :alt="card.name">
-                <div class="cost-tag" :class="'bg-' + card.color">{{ card.cost }}</div>
+        <!-- 標題與生動的動畫圖示 -->
+        <div class="text-center mb-8">
+            <div class="inline-block bg-green-100 text-green-600 p-4 rounded-full text-4xl mb-3 float-animation">
+                <i class="fa-solid fa-seedling"></i>
             </div>
-
-            <div class="card-info">
-                <div class="card-header">
-                    <span>{{ card.id }} ({{ card.rarity }})</span>
-                    <span class="type-badge" :class="'bg-' + card.color">{{ card.type }}</span>
-                </div>
-
-                <div class="card-title-row">
-                    <h3 class="card-name">{{ card.name }}</h3>
-                    <span class="trait-badge" v-if="card.trait">{{ card.trait }}</span>
-                </div>
-
-                <div class="card-power-row" v-if="card.type === '角色卡'">
-                    <div class="power-col">
-                        <span class="power-label">AP</span>
-                        <span class="power-num" style="color: #c62828;">{{ card.ap }}</span>
-                    </div>
-                    <div class="power-col">
-                        <span class="power-label">LP</span>
-                        <span class="power-num" style="color: #0277bd;">{{ card.lp }}</span>
-                    </div>
-                </div>
-
-                <div class="card-effect-text">
-                    <span class="effect-tag tag-cutin" v-if="card.hasCutIn">⚡️介入</span>
-                    <span class="effect-tag tag-turn" v-if="card.hasTurnLimit">{{ card.turnLimitText }}</span>
-                    {{ card.effect }}
-                </div>
-            </div>
+            <h1 class="text-2xl font-bold text-gray-800 tracking-wide">水耕工作紀錄</h1>
+            <p class="text-sm text-green-600 font-medium mt-1">讓每一顆種子都有跡可循 💧</p>
         </div>
 
-        <div class="no-data" v-if="filteredCards.length === 0">
-            找不到符合條件的卡牌 🔍
-        </div>
+        <!-- 紀錄表單 -->
+        <form id="recordForm" class="space-y-5">
+            
+            <!-- 1. 日期 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    <i class="fa-regular fa-calendar-days text-green-500 mr-1"></i> 紀錄日期
+                </label>
+                <input type="date" id="date" required 
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-400 focus:border-green-400 outline-none transition-all text-gray-700">
+            </div>
+
+            <!-- 2. 紀錄者姓名 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    <i class="fa-regular fa-user text-green-500 mr-1"></i> 紀錄者姓名
+                </label>
+                <input type="text" id="name" placeholder="請輸入您的姓名" required
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-400 focus:border-green-400 outline-none transition-all text-gray-700">
+            </div>
+
+            <!-- 3. 種植種類 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    <i class="fa-solid fa-leaf text-green-500 mr-1"></i> 種植種類
+                </label>
+                <select id="plantType" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-400 focus:border-green-400 outline-none transition-all text-gray-700 bg-white">
+                    <option value="" disabled selected>-- 請選擇植物種類 --</option>
+                    <option value="Romaine">🥬 Romaine (羅馬生菜)</option>
+                    <option value="Spinach">🍃 Spinach (菠菜)</option>
+                    <option value="Oak Leaf">🍁 Oak Leaf (橡木葉生菜)</option>
+                    <option value="Rosso Leaf">🍂 Rosso Leaf (紅羅莎生菜)</option>
+                    <option value="Lemon Basil">🌱 Lemon Basil (檸檬羅勒)</option>
+                    <option value="Italian Basil">🌿 Italian Basil (義大利羅勒)</option>
+                    <option value="Thai Basil">🪴 Thai Basil (泰式羅勒)</option>
+                </select>
+            </div>
+
+            <!-- 4. 種植數量 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    <i class="fa-solid fa-calculator text-green-500 mr-1"></i> 種植數量 (株/盆)
+                </label>
+                <input type="number" id="quantity" min="1" placeholder="請輸入正整數" required
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-400 focus:border-green-400 outline-none transition-all text-gray-700">
+            </div>
+
+            <!-- 提交按鈕 -->
+            <button type="submit" id="submitBtn"
+                    class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-green-500/20 transform active:scale-95 transition-all mt-4 cursor-pointer flex justify-center items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i> 即時上傳 Google Excel
+            </button>
+        </form>
+
+        <!-- 提示訊息 -->
+        <div id="statusMessage" class="hidden mt-4 p-3 rounded-xl text-center text-sm font-medium transition-all"></div>
     </div>
-</div>
 
-<script>
-    const { createApp, ref, computed } = Vue;
+    <script>
+        // 自動將今天日期設為預設值
+        document.getElementById('date').valueAsDate = new Date();
 
-    createApp({
-        setup() {
-            // 搜尋與篩選的雙向綁定變數
-            const searchQuery = ref('');
-            const selectedColor = ref('');
-            const selectedType = ref('');
+        // 請替換成您在第二步取得的 Google Apps Script 網址
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4C61Ty2p1oXgppviUgsNQIh4pvBq4fofSqT2eCFJ2Pcaj9dEp3y2GjcqsJQLn6Sug/exec';
 
-            // ==========================================
-            // 📝 未來你只需要在這裡「增加」或「修改」卡牌資料
-            // ==========================================
-            const cards = ref([
-                {
-                    id: "B10028 / 1089",
-                    rarity: "C",
-                    color: "green", // 可選: green, blue, red, white
-                    type: "角色卡",  // 可選: 角色卡, 事件卡, 現場卡
-                    cost: 2,
-                    name: "沖田總司",
-                    trait: "高校生",
-                    ap: 1000,
-                    lp: 1,
-                    hasCutIn: true,
-                    hasTurnLimit: true,
-                    turnLimitText: "自己回合中",
-                    effect: "自己現場每有１張特徵［高校生］的角色，AP+1000（在自己回合接觸期間，從手牌棄置來使用）",
-                    image: "75084666-5826-4944-b8ed-609ed3f7ef09.jpeg" // 確保圖片跟此html檔放在同個資料夾
-                }
-                // 💡 以後要加第二張卡，直接在下面貼上格式即可：
-                // ,{ id: "B10029", rarity: "R", color: "blue", type: "角色卡", ... }
-            ]);
-
-            // 核心邏輯：自動計算篩選後的卡牌清單
-            const filteredCards = computed(() => {
-                return cards.value.filter(card => {
-                    const matchesSearch = card.name.includes(searchQuery.value) || 
-                                          (card.trait && card.trait.includes(searchQuery.value)) || 
-                                          card.effect.includes(searchQuery.value);
-                    const matchesColor = selectedColor.value === '' || card.color === selectedColor.value;
-                    const matchesType = selectedType.value === '' || card.type === selectedType.value;
-                    
-                    return matchesSearch && matchesColor && matchesType;
-                });
-            });
-
-            return {
-                searchQuery,
-                selectedColor,
-                selectedType,
-                filteredCards
+        document.getElementById('recordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('statusMessage');
+            
+            // 按鈕讀取中狀態
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 資料傳送中...';
+            
+            // 收集表單資料
+            const formData = {
+                date: document.getElementById('date').value,
+                name: document.getElementById('name').value,
+                plantType: document.getElementById('plantType').value,
+                quantity: document.getElementById('quantity').value
             };
-        }
-    }).mount('#app');
-</script>
 
+            // 使用 Fetch API 異步傳送到 Google Sheets
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // 解決跨網域問題
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(() => {
+                // 顯示成功訊息
+                statusMsg.className = "mt-4 p-3 rounded-xl text-center text-sm font-medium bg-green-100 text-green-800 block";
+                statusMsg.innerHTML = "🎉 紀錄成功！資料已即時同步至 Google Excel。";
+                
+                // 表單重置（保留日期與姓名方便連續輸入）
+                document.getElementById('plantType').value = "";
+                document.getElementById('quantity').value = "";
+            })
+            .catch(error => {
+                statusMsg.className = "mt-4 p-3 rounded-xl text-center text-sm font-medium bg-red-100 text-red-800 block";
+                statusMsg.innerHTML = "❌ 傳送失敗，請檢查網路或設定。";
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // 恢復按鈕狀態
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 即時上傳 Google Excel';
+            });
+        });
+    </script>
 </body>
 </html>
-

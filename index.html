@@ -1,129 +1,179 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌱 水耕農場智慧紀錄後台</title>
+    <title>🌱 水耕農場工作紀錄系統</title>
     <style>
         :root {
-            --primary-color: #2ec4b6;
-            --secondary-color: #cbf3f0;
-            --accent-color: #ff9f1c;
-            --bg-color: #f8f9fa;
+            --primary-color: #2e7d32;
+            --secondary-color: #a5d6a7;
+            --bg-color: #f1f8e9;
+            --card-bg: #ffffff;
         }
+        
         body {
-            font-family: 'Segoe UI', Microsoft JhengHei, sans-serif;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
             background-color: var(--bg-color);
+            color: #333;
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
+
         .container {
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 500px;
-            border-top: 8px solid var(--primary-color);
+            max-width: 600px;
+            animation: fadeInUp 0.6s ease;
         }
+
         h2 {
             text-align: center;
-            color: #2b2d42;
+            color: var(--primary-color);
             margin-bottom: 25px;
+            font-size: 24px;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #4a5568;
+            color: #555;
         }
-        input, select {
+
+        input[type="date"], input[type="text"], input[type="number"], select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
+
         input:focus, select:focus {
             border-color: var(--primary-color);
             outline: none;
-            box-shadow: 0 0 0 3px var(--secondary-color);
+            box-shadow: 0 0 8px rgba(46, 125, 50, 0.2);
         }
-        .radio-group {
+
+        /* 讓按鈕選項更生動的設計 */
+        .radio-tile-group {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
         }
-        .radio-btn {
+
+        .radio-tile {
             flex: 1;
-            text-align: center;
-            padding: 10px;
-            border: 2px solid #e2e8f0;
+            min-width: 80px;
+            background: #fff;
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
+            padding: 10px;
+            text-align: center;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
-        .radio-group input { display: none; }
-        .radio-group input:checked + .radio-btn {
-            background-color: var(--primary-color);
+
+        .radio-tile:hover {
+            background: var(--bg-color);
+            border-color: var(--secondary-color);
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        /* 擴展選擇後的樣式 */
+        input[type="radio"]:checked + .radio-tile {
+            background: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
+            transform: scale(1.05);
         }
-        button {
-            width: 100%;
-            background-color: var(--accent-color);
+
+        .submit-btn {
+            background: var(--primary-color);
             color: white;
             border: none;
             padding: 15px;
+            width: 100%;
             border-radius: 10px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.3);
-            transition: transform 0.1s, background-color 0.2s;
+            transition: background 0.3s, transform 0.1s;
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
         }
-        button:active { transform: scale(0.98); }
-        button:hover { background-color: #e08913; }
+
+        .submit-btn:hover {
+            background: #1b5e20;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🥬 水耕種植紀錄表</h2>
-    <form id="hydroForm">
+    <h2>🌱 HydroFarm 工作紀錄</h2>
+    <form id="recordForm">
+        
         <div class="form-group">
-            <label>📅 紀錄日期</label>
+            <label for="date">📅 工作日期</label>
             <input type="date" id="date" required>
         </div>
 
         <div class="form-group">
-            <label>🧑‍🌾 紀錄者姓名</label>
-            <input type="text" id="name" placeholder="請輸入你的名字" required>
+            <label for="name">👤 紀錄者姓名</label>
+            <input type="text" id="name" placeholder="請輸入您的姓名" required>
         </div>
 
         <div class="form-group">
-            <label>🔧 工作種類</label>
-            <div class="radio-group">
-                <label><input type="radio" name="jobType" value="播種" checked><div class="radio-btn">🌱 播種</div></label>
-                <label><input type="radio" name="jobType" value="移植"><div class="radio-btn">🪵 移植</div></label>
-                <label><input type="radio" name="jobType" value="收成"><div class="radio-btn">🎉 收成</div></label>
+            <label>🛠️ 工作種類</label>
+            <div class="radio-tile-group">
+                <label>
+                    <input type="radio" name="jobType" value="播種" required>
+                    <div class="radio-tile">🌱 播種</div>
+                </label>
+                <label>
+                    <input type="radio" name="jobType" value="移植">
+                    <div class="radio-tile">🪵 移植</div>
+                </label>
+                <label>
+                    <input type="radio" name="jobType" value="收成">
+                    <div class="radio-tile">🧺 收成</div>
+                </label>
             </div>
         </div>
 
         <div class="form-group">
-            <label>🥗 植物種類</label>
+            <label for="plantType">🥗 植物種類</label>
             <select id="plantType" required>
-                <option value="Romaine">Romaine (蘿蔓)</option>
+                <option value="" disabled selected>-- 請選擇植物 --</option>
+                <option value="Romaine">Romaine (羅馬生菜)</option>
                 <option value="Spinach">Spinach (菠菜)</option>
-                <option value="Oak Leaf">Oak Leaf (橡木葉)</option>
-                <option value="Rosso Leaf">Rosso Leaf (紅羅莎)</option>
+                <option value="Oak Leaf">Oak Leaf (橡木葉生菜)</option>
+                <option value="Rosso Leaf">Rosso Leaf (紅蘿莎生菜)</option>
                 <option value="Lemon Basil">Lemon Basil (檸檬羅勒)</option>
                 <option value="Italian Basil">Italian Basil (義大利羅勒)</option>
                 <option value="Thai Basil">Thai Basil (九層塔/泰式羅勒)</option>
@@ -131,21 +181,30 @@
         </div>
 
         <div class="form-group">
-            <label>🔢 數量 (棵)</label>
-            <input type="number" id="quantity" min="1" placeholder="請輸入數量" required>
+            <label for="quantity">🔢 數量 (棵)</label>
+            <input type="number" id="quantity" min="1" placeholder="請輸入整數數量" required>
         </div>
 
-        <button type="submit">🚀 送出紀錄</button>
+        <button type="submit" class="submit-btn">儲存紀錄 🚀</button>
     </form>
 </div>
 
 <script>
     // 自動帶入今天日期
-    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('date').valueToDate = new Date();
+    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
 
-    document.getElementById('hydroForm').addEventListener('submit', function(e) {
+    // GAS 部署後的網頁應用程式 URL (步驟3取得後填入此處)
+    const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbwTgWkO_3wxcZLwUExoF7gB5xHpWUuuM8HQuq5WJVvVWUNSTPENaWqGJzNSHr-vI0Fr/exec';
+
+    document.getElementById('recordForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
+        const submitBtn = document.querySelector('.submit-btn');
+        submitBtn.innerText = '正在同步至雲端... ⏳';
+        submitBtn.disabled = true;
+
+        // 收集資料
         const formData = {
             date: document.getElementById('date').value,
             name: document.getElementById('name').value,
@@ -154,23 +213,18 @@
             quantity: document.getElementById('quantity').value
         };
 
-        // 這裡替換成你的 Google Apps Script Web App URL
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxXGvyawB31yk4iNJBoAYejxjwxBO_6kLkdxKgBMuWHwEvriqgGbmJtamQEtCiEhMjf/exec';
-
-        alert('正在發送紀錄...');
-
-        fetch(scriptURL, {
+        // 即時發送至 Google Sheets
+        fetch(googleAppScriptUrl, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'no-cors', // 避免跨網域造成的錯誤提示
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         })
         .then(() => {
-            alert('🎉 紀錄成功！資料已同步至 Excel。');
+            alert('🎉 紀錄成功！資料已即時寫入 Google Excel。');
+            // 表單重置
+            document.getElementById('name').value = '';
             document.getElementById('quantity').value = '';
-        })
-        .catch(error => alert('錯誤：', error));
-    });
-</script>
-</body>
-</html>
+            document.querySelectorAll('input[name="jobType"]').forEach(el => el.checked = false);
+            document.getElementById('plantType').selectedIndex = 0;
+            submitBtn.innerText = '儲存紀錄 🚀
